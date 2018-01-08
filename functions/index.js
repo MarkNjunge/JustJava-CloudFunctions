@@ -1,6 +1,5 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const moment = require("moment");
 admin.initializeApp(functions.config().firebase);
 
 // // Create and Deploy Your First Cloud Functions
@@ -14,7 +13,6 @@ exports.notifyOnCompletedOrder = functions.firestore
 			const orderId = event.params.orderId;
 			const status = event.data.data().status;
 			const token = event.data.data().fcmToken;
-			const timestamp = event.data.data().timestamp;
 
 			console.log(`Update to order ${orderId}, Status: ${status}`);
 
@@ -24,10 +22,9 @@ exports.notifyOnCompletedOrder = functions.firestore
 			}
 
 			if (token) {
-				const time = moment(timestamp).format("h:mm a");
 				sendNotification(
 					"Completed order",
-					`The order you placed at ${time} has been completed.`,
+					`Your order has been completed.`,
 					token
 				)
 					.then(response => {
