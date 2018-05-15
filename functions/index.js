@@ -2,9 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp(functions.config().firebase);
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
+const callbackHandler = require("./callbackUrl");
 
 exports.notifyOnCompletedOrder = functions.firestore
   .document("orders/{orderId}")
@@ -38,6 +36,8 @@ exports.notifyOnCompletedOrder = functions.firestore
       }
     });
   });
+
+exports.callback_url = functions.https.onRequest(callbackHandler);
 
 function sendNotification(orderId, timestamp, token) {
   const payload = {
