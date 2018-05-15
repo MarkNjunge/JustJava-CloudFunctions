@@ -60,4 +60,5 @@ typings/
 # next.js build output
 .next
 
-functions/local-testing.txt
+# Service account key. Only used to emulation FCM locally
+functions/key.json

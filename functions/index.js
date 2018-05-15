@@ -1,27 +1,29 @@
+//@ts-check
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-admin.initializeApp(functions.config().firebase);
+admin.initializeApp();
 
 const callbackHandler = require("./callbackUrl");
 
 exports.notifyOnCompletedOrder = functions.firestore
   .document("orders/{orderId}")
-  .onUpdate(event => {
+  .onUpdate((change, context) => {
     return new Promise((resolve, reject) => {
-      const orderId = event.params.orderId;
-      const status = event.data.data().status;
-      const token = event.data.data().fcmToken;
-      const timestanp = event.data.data().timestanp;
+      const orderId = context.params.orderId;
+      const status = change.after.data().status;
+      const token = change.after.data().fcmToken;
+      const date = change.after.data().date;
 
       console.log(`Update to order ${orderId}, Status: ${status}`);
 
       if (status != "COMPLETED") {
+        console.log("Nothing to send to user.");
         resolve("Nothing to send to user.");
         return;
       }
 
       if (token) {
-        sendNotification(orderId, timestanp, token)
+        sendNotification(orderId, token)
           .then(response => {
             console.log("Notification sent to user.");
             resolve("Notification sent to user.");
@@ -39,9 +41,9 @@ exports.notifyOnCompletedOrder = functions.firestore
 
 exports.callback_url = functions.https.onRequest(callbackHandler);
 
-function sendNotification(orderId, timestamp, token) {
+function sendNotification(orderId, token) {
   const payload = {
-    data: { orderId, timestamp, reason: "completed-order" }
+    data: { orderId, reason: "completed-order" }
   };
   return admin.messaging().sendToDevice(token, payload);
 }
