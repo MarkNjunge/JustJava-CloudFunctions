@@ -13,7 +13,6 @@ exports.notifyOnCompletedOrder = functions.firestore
       const orderId = context.params.orderId;
       const status = change.after.data().status;
       const token = change.after.data().fcmToken;
-      const date = change.after.data().date;
 
       console.log(`Update to order ${orderId}, Status: ${status}`);
 
@@ -26,7 +25,7 @@ exports.notifyOnCompletedOrder = functions.firestore
       if (token) {
         notificationHelper
           .sendOrderNotification(orderId, token)
-          .then(response => {
+          .then(() => {
             console.log("Notification sent to user.");
             resolve("Notification sent to user.");
           })
