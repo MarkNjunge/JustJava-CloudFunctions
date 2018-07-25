@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 const callbackHandler = require("./callbackUrl");
+const notificationHelper = require("./notificationHelper");
 
 exports.notifyOnCompletedOrder = functions.firestore
   .document("orders/{orderId}")
@@ -23,7 +24,8 @@ exports.notifyOnCompletedOrder = functions.firestore
       }
 
       if (token) {
-        sendNotification(orderId, token)
+        notificationHelper
+          .sendOrderNotification(orderId, token)
           .then(response => {
             console.log("Notification sent to user.");
             resolve("Notification sent to user.");
@@ -40,10 +42,3 @@ exports.notifyOnCompletedOrder = functions.firestore
   });
 
 exports.callback_url = functions.https.onRequest(callbackHandler);
-
-function sendNotification(orderId, token) {
-  const payload = {
-    data: { orderId, reason: "completed-order" }
-  };
-  return admin.messaging().sendToDevice(token, payload);
-}

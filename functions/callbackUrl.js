@@ -2,6 +2,8 @@ const admin = require("firebase-admin");
 const app = require("express")();
 const cors = require("cors");
 
+const notificationHelper = require("./notificationHelper");
+
 app.use(cors({ origin: true }));
 
 const parse = require("./parse");
@@ -18,8 +20,7 @@ app.post("/:token", (req, res) => {
   const parsedData = parse(callbackData);
 
   if (parsedData.resultCode == 0) {
-    sendNotification(
-      "Just Java",
+    notificationHelper.sendMpesaNotification(
       "Your payment was successful.",
       req.params.token
     );
@@ -31,8 +32,7 @@ app.post("/:token", (req, res) => {
       }
     });
   } else {
-    sendNotification(
-      "Just Java",
+    notificationHelper.sendMpesaNotification(
       "Your transaction was not successful.",
       req.params.token
     );
@@ -46,10 +46,5 @@ app.post("/:token", (req, res) => {
   }
   res.send("Completed");
 });
-
-function sendNotification(title, body, token) {
-  const payload = { notification: { title, body } };
-  return admin.messaging().sendToDevice(token, payload);
-}
 
 module.exports = app;
