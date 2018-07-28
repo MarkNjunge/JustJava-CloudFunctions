@@ -65,8 +65,22 @@ function saveFailedPayment(id, parsedData) {
     });
 }
 
+/**
+ * @param {String} orderId Order id
+ */
+function setOrderToPaid(orderId) {
+  return firestore
+    .collection("orders")
+    .doc(orderId)
+    .update({
+      paymentStatus: "paid"
+    })
+    .then(() => orderId);
+}
+
 module.exports = {
   getDocumentId,
   saveCompletedPayment,
-  saveFailedPayment
+  saveFailedPayment,
+  setOrderToPaid
 };

@@ -6,7 +6,8 @@ const notificationHelper = require("./notificationHelper");
 const {
   getDocumentId,
   saveCompletedPayment,
-  saveFailedPayment
+  saveFailedPayment,
+  setOrderToPaid
 } = require("./dbHelper");
 
 app.use(cors({ origin: true }));
@@ -25,6 +26,7 @@ app.post("/:token", (req, res) => {
   if (parsedData.resultCode == 0) {
     getDocumentId(parsedData.checkoutRequestID)
       .then(id => saveCompletedPayment(id, parsedData))
+      .then(orderId => setOrderToPaid(orderId))
       .then(orderId =>
         notificationHelper.sendMpesaNotification(
           "Your payment was successful.",
