@@ -25,10 +25,12 @@ app.post("/:token", (req, res) => {
   if (parsedData.resultCode == 0) {
     getDocumentId(parsedData.checkoutRequestID)
       .then(id => saveCompletedPayment(id, parsedData))
-      .then(() =>
+      .then(orderId =>
         notificationHelper.sendMpesaNotification(
           "Your payment was successful.",
-          req.params.token
+          req.params.token,
+          orderId,
+          "completed"
         )
       )
       .then(() => {
@@ -41,10 +43,12 @@ app.post("/:token", (req, res) => {
   } else {
     getDocumentId(parsedData.checkoutRequestID)
       .then(id => saveFailedPayment(id, parsedData))
-      .then(() =>
+      .then(orderId =>
         notificationHelper.sendMpesaNotification(
           "Your transaction was not successful.",
-          req.params.token
+          req.params.token,
+          orderId,
+          "failed"
         )
       )
       .then(() => {

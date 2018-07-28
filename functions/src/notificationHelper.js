@@ -12,9 +12,15 @@ function sendOrderNotification(orderId, token) {
   return admin.messaging().sendToDevice(token, payload);
 }
 
-function sendMpesaNotification(body, token) {
+/**
+ * @param {String} body Notification body
+ * @param {String} token FCM token
+ * @param {String} orderId orderId
+ * @param {String} status completed or failed
+ */
+function sendMpesaNotification(body, token, orderId, status) {
   const payload = {
-    data: { reason: "mpesa", body }
+    data: { reason: "mpesa", body, orderId, status }
   };
   return admin.messaging().sendToDevice(token, payload);
 }

@@ -23,15 +23,22 @@ function saveCompletedPayment(id, parsedData) {
   return firestore
     .collection("payments")
     .doc(id)
-    .update({
-      amount: parsedData.amount,
-      mpesaReceiptNumber: parsedData.mpesaReceiptNumber,
-      date: moment().unix(),
-      dateSaf: parsedData.transtactionDate,
-      phoneNumber: parsedData.phoneNumber,
-      status: "completed",
-      resultDesc: parsedData.resultDesc,
-      resultCode: parsedData.resultCode
+    .get()
+    .then(snapshot => {
+      return firestore
+        .collection("payments")
+        .doc(id)
+        .update({
+          amount: parsedData.amount,
+          mpesaReceiptNumber: parsedData.mpesaReceiptNumber,
+          date: moment().unix(),
+          dateSaf: parsedData.transtactionDate,
+          phoneNumber: parsedData.phoneNumber,
+          status: "completed",
+          resultDesc: parsedData.resultDesc,
+          resultCode: parsedData.resultCode
+        })
+        .then(() => snapshot.data().orderId);
     });
 }
 
@@ -43,11 +50,18 @@ function saveFailedPayment(id, parsedData) {
   return firestore
     .collection("payments")
     .doc(id)
-    .update({
-      resultDesc: parsedData.resultDesc,
-      resultCode: parsedData.resultCode,
-      date: moment().unix(),
-      status: "failed"
+    .get()
+    .then(snapshot => {
+      return firestore
+        .collection("payments")
+        .doc(id)
+        .update({
+          resultDesc: parsedData.resultDesc,
+          resultCode: parsedData.resultCode,
+          date: moment().unix(),
+          status: "failed"
+        })
+        .then(() => snapshot.data().orderId);
     });
 }
 
