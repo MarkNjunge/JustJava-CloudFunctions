@@ -1,5 +1,3 @@
-const moment = require("moment");
-
 function parse(responseData) {
   const parsedData = {};
   parsedData.merchantRequestID = responseData.MerchantRequestID;
@@ -18,10 +16,7 @@ function parse(responseData) {
           parsedData.mpesaReceiptNumber = element.Value;
           break;
         case "TransactionDate":
-          parsedData.transtactionDate = moment(
-            element.Value,
-            "YYYYMMDDhhmmss"
-          ).unix();
+          parsedData.transtactionDate = element.Value;
           break;
         case "PhoneNumber":
           parsedData.phoneNumber = element.Value;

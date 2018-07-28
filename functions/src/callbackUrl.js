@@ -1,14 +1,17 @@
-const admin = require("firebase-admin");
+//@ts-check
 const app = require("express")();
 const cors = require("cors");
 
 const notificationHelper = require("./notificationHelper");
+const {
+  getDocumentId,
+  saveCompletedPayment,
+  saveFailedPayment
+} = require("./dbHelper");
 
 app.use(cors({ origin: true }));
 
 const parse = require("./parse");
-
-const db = admin.database();
 
 app.post("/:token", (req, res) => {
   console.log("Callback received.");
@@ -20,31 +23,38 @@ app.post("/:token", (req, res) => {
   const parsedData = parse(callbackData);
 
   if (parsedData.resultCode == 0) {
-    notificationHelper.sendMpesaNotification(
-      "Your payment was successful.",
-      req.params.token
-    );
-    db.ref("LNM/successful").push(parsedData, error => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Transaction saved to database.");
-      }
-    });
+    getDocumentId(parsedData.checkoutRequestID)
+      .then(id => saveCompletedPayment(id, parsedData))
+      .then(() =>
+        notificationHelper.sendMpesaNotification(
+          "Your payment was successful.",
+          req.params.token
+        )
+      )
+      .then(() => {
+        res.send("Completed");
+      })
+      .catch(err => {
+        console.error(err);
+        res.send("Completed");
+      });
   } else {
-    notificationHelper.sendMpesaNotification(
-      "Your transaction was not successful.",
-      req.params.token
-    );
-    db.ref("LNM/failed").push(parsedData, err => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Transaction saved to database.");
-      }
-    });
+    getDocumentId(parsedData.checkoutRequestID)
+      .then(id => saveFailedPayment(id, parsedData))
+      .then(() =>
+        notificationHelper.sendMpesaNotification(
+          "Your transaction was not successful.",
+          req.params.token
+        )
+      )
+      .then(() => {
+        res.send("Completed");
+      })
+      .catch(err => {
+        console.error(err);
+        res.send("Completed");
+      });
   }
-  res.send("Completed");
 });
 
 module.exports = app;
