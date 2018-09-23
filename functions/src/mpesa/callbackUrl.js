@@ -2,13 +2,13 @@
 const app = require("express")();
 const cors = require("cors");
 
-const notificationHelper = require("./notificationHelper");
+const notificationHelper = require("../utils/notificationHelper");
 const {
   getDocumentId,
   saveCompletedPayment,
   saveFailedPayment,
   setOrderToPaid
-} = require("./dbHelper");
+} = require("../utils/dbHelper");
 
 app.use(cors({ origin: true }));
 

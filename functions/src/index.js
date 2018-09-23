@@ -1,8 +1,8 @@
 //@ts-check
 const functions = require("firebase-functions");
 
-const callbackHandler = require("./callbackUrl");
-const notificationHelper = require("./notificationHelper");
+const callbackHandler = require("./mpesa/callbackUrl");
+const notificationHelper = require("./utils/notificationHelper");
 
 module.exports.notifyOnCompletedOrder = functions.firestore
   .document("orders/{orderId}")
