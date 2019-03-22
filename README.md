@@ -1,6 +1,6 @@
 # JustJava-CloudFunctions
 
-Firebase cloud functions for [JustJava](https://github.com/MarkNKamau/JustJava-Android).
+Firebase cloud functions for [JustJava](https://github.com/MarkNjunge/JustJava-Android).
 
 ## Functions
 
