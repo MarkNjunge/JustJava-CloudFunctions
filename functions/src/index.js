@@ -5,7 +5,7 @@ const callbackHandler = require("./mpesa/callbackUrl");
 const notificationHelper = require("./utils/notificationHelper");
 
 module.exports.notifyOnCompletedOrder = functions.firestore
-  .document("orders/{orderId}")
+  .document("/orders/{orderId}")
   .onUpdate((change, context) => {
     return new Promise((resolve, reject) => {
       const orderId = context.params.orderId;
