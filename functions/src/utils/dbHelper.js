@@ -78,9 +78,22 @@ function setOrderToPaid(orderId) {
     .then(() => orderId);
 }
 
+/**
+ * Get a user's details
+ * @param {String} userId The user's id
+ */
+function getUser(userId) {
+  return firestore
+    .collection("users")
+    .doc(userId)
+    .get()
+    .then(doc => doc.data());
+}
+
 module.exports = {
   getDocumentId,
   saveCompletedPayment,
   saveFailedPayment,
-  setOrderToPaid
+  setOrderToPaid,
+  getUser
 };
