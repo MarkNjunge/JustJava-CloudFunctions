@@ -63,3 +63,4 @@ typings/
 # Service account key. Only used to emulation FCM locally
 functions/key.json
 functions/src/config.js
+.firebaserc
