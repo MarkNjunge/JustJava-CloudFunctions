@@ -16,5 +16,8 @@
     "firebase-functions": "^2.2.0",
     "moment": "^2.20.1"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": "10"
+  }
 }
