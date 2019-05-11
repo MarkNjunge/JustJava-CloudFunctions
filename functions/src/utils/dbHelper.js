@@ -16,6 +16,31 @@ function getDocumentId(checkoutRequestID) {
 }
 
 /**
+ * Save a pending payment
+ * @param {string} checkoutRequestId
+ * @param {string} merchantRequestId
+ * @param {string} orderId
+ * @param {string} customerId
+ */
+function savePaymentRequest(
+  checkoutRequestId,
+  merchantRequestId,
+  orderId,
+  customerId
+) {
+  return firestore
+    .collection("payments")
+    .doc(checkoutRequestId)
+    .set({
+      checkoutRequestId,
+      merchantRequestId,
+      orderId,
+      customerId,
+      status: "pending"
+    });
+}
+
+/**
  * @param {String} id Document id for the payment
  * @param {Object} parsedData Parsed callback data
  */
@@ -92,6 +117,7 @@ function getUser(userId) {
 
 module.exports = {
   getDocumentId,
+  savePaymentRequest,
   saveCompletedPayment,
   saveFailedPayment,
   setOrderToPaid,

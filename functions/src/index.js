@@ -1,7 +1,7 @@
 //@ts-check
 const functions = require("firebase-functions");
 
-const callbackHandler = require("./mpesa/callbackUrl");
+const mpesaHandler = require("./mpesa/mpesaHandler");
 const notificationHelper = require("./utils/notificationHelper");
 const dbHelper = require("./utils/dbHelper");
 
@@ -48,4 +48,4 @@ module.exports.notifyOnCompletedOrder = functions.firestore
     });
   });
 
-module.exports.callbackHandler = callbackHandler;
+module.exports.mpesaHandler = mpesaHandler;
