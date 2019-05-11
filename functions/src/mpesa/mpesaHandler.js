@@ -16,7 +16,7 @@ const {
   apiKey,
   safaricomConsumerKey,
   safaricomConsumerSecret,
-  basefunctionsUrl
+  baseCallbackUrl
 } = require("../config");
 
 app.use(cors({ origin: true }));
@@ -126,7 +126,7 @@ function createStkBody(amount, phone, orderId, fcmToken) {
     AccountReference: orderId,
     Amount: amount,
     BusinessShortCode: businessShortCode,
-    CallBackURL: `${basefunctionsUrl}mpesa/${fcmToken}`,
+    CallBackURL: `${baseCallbackUrl}${fcmToken}`,
     PartyA: phone,
     PartyB: businessShortCode,
     Password: password,
