@@ -56,6 +56,9 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
       { headers: { Authorization: `Bearer ${res1.data.access_token}` } }
     );
 
+    // Finish
+    res.send({ message: "Success!" });
+
     // Save request details
     await savePaymentRequest(
       res2.data.CheckoutRequestID,
@@ -63,9 +66,6 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
       orderId,
       customerId
     );
-
-    // Finish
-    res.send({ message: "Success!" });
   } catch (e) {
     console.log(e);
     res.status(500).send({ message: "Failed!" });
