@@ -31,8 +31,8 @@ module.exports = {
 };
 ```
 
-`apiKey`: A key used for LNMO request.
-`safaricomConsumerKey`, `safaricomConsumerSecret`: Get from [Safaricom developer portal](https://developer.safaricom.co.ke/)
+`apiKey`: A key used for LNMO request.  
+`safaricomConsumerKey`, `safaricomConsumerSecret`: Get from [Safaricom developer portal](https://developer.safaricom.co.ke/)  
 `basefunctionsUrl`: The only accurate way to determine this is to first deploy. **MUST** end with `mpesa/`.
 
 ## Testing locally
