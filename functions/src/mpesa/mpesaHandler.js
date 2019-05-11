@@ -17,7 +17,7 @@ const {
   safaricomConsumerKey,
   safaricomConsumerSecret,
   basefunctionsUrl
-} = require("../../config");
+} = require("../config");
 
 app.use(cors({ origin: true }));
 
