@@ -4,23 +4,27 @@ Firebase cloud functions for [JustJava](https://github.com/MarkNjunge/JustJava-A
 
 ## Installation
 
+- Clone the repository
+
 ```bash
 $ git clone https://github.com/MarkNjunge/JustJava-CloudFunctions
+```
 
+- Install dependencies
+
+```bash
 $ cd JustJava-CloudFunctions/functions
 
 $ yarn install
 ```
 
-Link to a Firebase project by running
+- Link to a Firebase project by running `...` choosing **not** to overwrite existing files.
 
 ```bash
-firebase init functions
+$ firebase init functions
 ```
 
-choosing not to overwrite existing files.
-
-Create a config file `/functions/src/config.js`
+- Create a config file `/functions/src/config.js`
 
 ```Javascript
 module.exports = {
@@ -33,32 +37,17 @@ module.exports = {
 
 `apiKey`: A key used for LNMO request.  
 `safaricomConsumerKey`, `safaricomConsumerSecret`: Get from [Safaricom developer portal](https://developer.safaricom.co.ke/)  
-`basefunctionsUrl`: The only accurate way to determine this is to first deploy. **MUST** end with `mpesa/`.
+`basefunctionsUrl`: The only accurate way to determine this is to first deploy, then check the url. **MUST** end with `mpesa/`.
 
 ## Testing locally
 
-To test Messaging locally, you will need to [set up admin credentials](https://firebase.google.com/docs/functions/local-emulator?authuser=0#set_up_admin_credentials_optional).
+To test **messaging** locally, you will need to [set up admin credentials](https://firebase.google.com/docs/functions/local-emulator?authuser=0#set_up_admin_credentials_optional).
 
 ### Testing HTTP endpoints
 
 ```bash
 $ cd functions & yarn serve
 ```
-
-Firebase will give you an address for the endpoints. For example, `http://localhost:5000/justjava-android/us-central1/mpesa`
-
-To make the endpoints reachable outside your network, you wil need to use a http tunneling client such as [Ngrok](https://ngrok.com/).
-
-Using Ngrok
-Expose port 5000 (Firebase's default port) using
-
-```bash
-$ ngrok http 5000
-```
-
-Ngrok will give you an address such as `http://f2ca75f0.ngrok.io`
-
-The resulting url for the endpoint will therefore be `http://f2ca75f0.ngrok.io/justjava-android/us-central1/mpesa`
 
 ### Testing firestore triggers
 
