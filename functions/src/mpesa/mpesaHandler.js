@@ -35,6 +35,7 @@ const apiKeyMiddleware = (req, res, next) => {
 
 app.post("/request", apiKeyMiddleware, async (req, res) => {
   const { amount, phone, orderId, customerId, fcmToken } = req.body;
+  console.log(`LNMO request received for prder ${orderId}`);
 
   try {
     // Get access token
@@ -48,6 +49,7 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
         }
       }
     );
+    console.log("Access token obtained");
 
     // Make stk push request
     const res2 = await axios.post(
@@ -55,9 +57,9 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
       createStkBody(amount, phone, orderId, fcmToken),
       { headers: { Authorization: `Bearer ${res1.data.access_token}` } }
     );
-
-    // Finish
-    res.send({ message: "Success!" });
+    console.log(
+      `STK push sent. Checkout request ID: ${res2.data.CheckoutRequestID}`
+    );
 
     // Save request details
     await savePaymentRequest(
@@ -66,6 +68,10 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
       orderId,
       customerId
     );
+    console.log("Saved payment request details");
+
+    // Finish
+    res.send({ message: "Success!" });
   } catch (e) {
     console.log(e);
     res.status(500).send({ message: "Failed!" });
@@ -73,23 +79,26 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
 });
 
 app.post("/:token", async (req, res) => {
-  console.log("Callback received.");
-  res.send("OK");
-
   const callbackData = req.body.Body.stkCallback;
-  console.log(JSON.stringify(callbackData));
+  console.log(`STK callback received: ${JSON.stringify(callbackData)}`);
 
   const parsedData = parse(callbackData);
-  console.log(JSON.stringify(parsedData));
+  console.log(
+    `Callback checkout request id: ${JSON.stringify(
+      parsedData.checkoutRequestID
+    )}`
+  );
 
   if (parsedData.resultCode == 0) {
+    console.log("Transaction was successfull");
     const docId = await getDocumentId(parsedData.checkoutRequestID);
-    console.log(docId);
+    console.log(`Document ID: ${docId}`);
 
     const orderId = await saveCompletedPayment(docId, parsedData);
-    console.log(orderId);
+    console.log(`Order ID: ${orderId}`);
 
     await setOrderToPaid(orderId);
+    console.log("Order status updated");
 
     notificationHelper.sendMpesaNotification(
       "Your payment was successful.",
@@ -98,10 +107,15 @@ app.post("/:token", async (req, res) => {
       "completed"
     );
   } else {
+    console.log(
+      `Transaction failed for request ${parsedData.checkoutRequestID}`
+    );
     const docId = await getDocumentId(parsedData.checkoutRequestID);
-    console.log(docId);
+    console.log(`Document ID: ${docId}`);
 
     const orderId = await saveFailedPayment(docId, parsedData);
+    console.log("Order status updated");
+
     notificationHelper.sendMpesaNotification(
       "Your transaction was not successful.",
       req.params.token,
@@ -109,6 +123,7 @@ app.post("/:token", async (req, res) => {
       "failed"
     );
   }
+  res.send("OK");
 });
 
 function createStkBody(amount, phone, orderId, fcmToken) {
