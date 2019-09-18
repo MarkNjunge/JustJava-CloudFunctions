@@ -2,30 +2,18 @@
 const app = require("express")();
 const cors = require("cors");
 const axios = require("axios").default;
-const moment = require("moment");
 
-const notificationHelper = require("../utils/notificationHelper");
-const {
-  getDocumentId,
-  savePaymentRequest,
-  saveCompletedPayment,
-  saveFailedPayment,
-  setOrderToPaid
-} = require("../utils/dbHelper");
-const {
-  apiKey,
-  safaricomConsumerKey,
-  safaricomConsumerSecret,
-  baseCallbackUrl
-} = require("../config");
+const notificationUtils = require("./utils/notification-utils");
+const dbUtils = require("./utils/db-utils");
+const config = require("./config");
 
 app.use(cors({ origin: true }));
 
-const parse = require("./parse");
+const mpesaUtils = require("./utils/mpesa-utils");
 
 const apiKeyMiddleware = (req, res, next) => {
   const reqApiKey = req.header("ApiKey");
-  if (!reqApiKey || reqApiKey != apiKey) {
+  if (!reqApiKey || reqApiKey != config.apiKey) {
     res.status(401).send({ message: "Unauthorized" });
     return;
   }
@@ -33,8 +21,13 @@ const apiKeyMiddleware = (req, res, next) => {
   next();
 };
 
+// Kept for legacy
 app.post("/request", apiKeyMiddleware, async (req, res) => {
-  const { amount, phone, orderId, customerId, fcmToken } = req.body;
+  res.redirect(307, "mpesa/request");
+});
+
+app.post("/mpesa/request", apiKeyMiddleware, async (req, res) => {
+  const { amount, phone, orderId, customerId } = req.body;
   console.log(`LNMO request received for prder ${orderId}`);
 
   try {
@@ -44,7 +37,7 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            safaricomConsumerKey + ":" + safaricomConsumerSecret
+            config.safaricomConsumerKey + ":" + config.safaricomConsumerSecret
           ).toString("base64")}`
         }
       }
@@ -54,7 +47,7 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
     // Make stk push request
     const res2 = await axios.post(
       "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-      createStkBody(amount, phone, orderId, fcmToken),
+      mpesaUtils.createStkBody(amount, phone, orderId),
       { headers: { Authorization: `Bearer ${res1.data.access_token}` } }
     );
     console.log(
@@ -62,7 +55,7 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
     );
 
     // Save request details
-    await savePaymentRequest(
+    await dbUtils.savePaymentRequest(
       res2.data.CheckoutRequestID,
       res2.data.MerchantRequestID,
       orderId,
@@ -78,11 +71,11 @@ app.post("/request", apiKeyMiddleware, async (req, res) => {
   }
 });
 
-app.post("/:token", async (req, res) => {
+app.post("/mpesa/callback", async (req, res) => {
   const callbackData = req.body.Body.stkCallback;
   console.log(`STK callback received: ${JSON.stringify(callbackData)}`);
 
-  const parsedData = parse(callbackData);
+  const parsedData = mpesaUtils.parseCallbackData(callbackData);
   console.log(
     `Callback checkout request id: ${JSON.stringify(
       parsedData.checkoutRequestID
@@ -91,18 +84,21 @@ app.post("/:token", async (req, res) => {
 
   if (parsedData.resultCode == 0) {
     console.log("Transaction was successfull");
-    const docId = await getDocumentId(parsedData.checkoutRequestID);
+    const docId = await dbUtils.getDocumentId(parsedData.checkoutRequestID);
     console.log(`Document ID: ${docId}`);
 
-    const orderId = await saveCompletedPayment(docId, parsedData);
+    const orderId = await dbUtils.saveCompletedPayment(docId, parsedData);
     console.log(`Order ID: ${orderId}`);
 
-    await setOrderToPaid(orderId);
+    await dbUtils.setOrderToPaid(orderId);
     console.log("Order status updated");
 
-    notificationHelper.sendMpesaNotification(
+    const order = await dbUtils.getOrder(orderId);
+    const user = await dbUtils.getUser(order.customerId);
+
+    notificationUtils.sendMpesaNotification(
       "Your payment was successful.",
-      req.params.token,
+      user.fcmToken,
       orderId,
       "completed"
     );
@@ -110,46 +106,24 @@ app.post("/:token", async (req, res) => {
     console.log(
       `Transaction failed for request ${parsedData.checkoutRequestID}`
     );
-    const docId = await getDocumentId(parsedData.checkoutRequestID);
+    const docId = await dbUtils.getDocumentId(parsedData.checkoutRequestID);
     console.log(`Document ID: ${docId}`);
 
-    const orderId = await saveFailedPayment(docId, parsedData);
+    const orderId = await dbUtils.saveFailedPayment(docId, parsedData);
     console.log("Order status updated");
 
-    notificationHelper.sendMpesaNotification(
+    const order = await dbUtils.getOrder(orderId);
+    const user = await dbUtils.getUser(order.customerId);
+
+    notificationUtils.sendMpesaNotification(
       "Your transaction was not successful.",
-      req.params.token,
+      user.fcmToken,
       orderId,
       "failed"
     );
   }
+
   res.send("OK");
 });
-
-function createStkBody(amount, phone, orderId, fcmToken) {
-  const businessShortCode = 174379;
-  const passKey =
-    "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
-  var now = moment();
-  const timestamp = now.format("YYYYMMDDHHmmss");
-
-  const password = Buffer.from(
-    `${businessShortCode}${passKey}${timestamp}`
-  ).toString("base64");
-
-  return {
-    AccountReference: orderId,
-    Amount: amount,
-    BusinessShortCode: businessShortCode,
-    CallBackURL: `${baseCallbackUrl}${fcmToken}`,
-    PartyA: phone,
-    PartyB: businessShortCode,
-    Password: password,
-    PhoneNumber: phone,
-    Timestamp: timestamp,
-    TransactionDesc: `Payment for ${orderId}`,
-    TransactionType: "CustomerPayBillOnline"
-  };
-}
 
 module.exports = app;

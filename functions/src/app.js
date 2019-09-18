@@ -1,9 +1,11 @@
 //@ts-check
 const functions = require("firebase-functions");
 
-const mpesaHandler = require("./mpesa/mpesaHandler");
-const notificationHelper = require("./utils/notificationHelper");
-const dbHelper = require("./utils/dbHelper");
+const router = require("./router");
+const notificationUtils = require("./utils/notification-utils");
+const dbHelper = require("./utils/db-utils");
+
+module.exports.router = router;
 
 module.exports.notifyOnCompletedOrder = functions.firestore
   .document("/orders/{orderId}")
@@ -36,7 +38,7 @@ module.exports.notifyOnCompletedOrder = functions.firestore
           }
           return token;
         })
-        .then(token => notificationHelper.sendOrderNotification(orderId, token))
+        .then(token => notificationUtils.sendOrderNotification(orderId, token))
         .then(() => {
           console.log("Notification sent to user.");
           resolve("Notification sent to user.");
@@ -47,5 +49,3 @@ module.exports.notifyOnCompletedOrder = functions.firestore
         });
     });
   });
-
-module.exports.mpesaHandler = mpesaHandler;

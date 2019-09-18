@@ -4,9 +4,11 @@ const firestore = admin.firestore();
 const moment = require("moment");
 
 /**
+ * Get a document id for payment
+ *
  * @param {String} checkoutRequestID CheckoutRequestID from Safaricom
  */
-function getDocumentId(checkoutRequestID) {
+function getDocumentIdForPayment(checkoutRequestID) {
   return firestore
     .collection("payments")
     .where("checkoutRequestId", "==", checkoutRequestID)
@@ -115,11 +117,24 @@ function getUser(userId) {
     .then(doc => doc.data());
 }
 
+/**
+ * Get an order by its id
+ * @param {String} orderId Order ID
+ */
+function getOrder(orderId) {
+  return firestore
+    .collection("orders")
+    .doc(orderId)
+    .get()
+    .then(doc => doc.data());
+}
+
 module.exports = {
-  getDocumentId,
+  getDocumentId: getDocumentIdForPayment,
   savePaymentRequest,
   saveCompletedPayment,
   saveFailedPayment,
   setOrderToPaid,
-  getUser
+  getUser,
+  getOrder
 };

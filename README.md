@@ -7,37 +7,60 @@ Firebase cloud functions for [JustJava](https://github.com/MarkNjunge/JustJava-A
 - Clone the repository
 
 ```bash
-$ git clone https://github.com/MarkNjunge/JustJava-CloudFunctions
+$ git clone https://github.com/MarkNjunge/JustJava-CloudFunctions just-java-cloud-functions
 ```
 
 - Install dependencies
 
 ```bash
-$ cd JustJava-CloudFunctions/functions
+$ cd just-java-cloud-functions/functions
 
 $ yarn install
 ```
 
-- Link to a Firebase project by running `...` choosing **not** to overwrite existing files.
+- Link to a Firebase project, choosing **not** to overwrite existing files.
 
 ```bash
 $ firebase init functions
 ```
 
-- Create a config file `/functions/src/config.js`
+- Create a config.json file `/functions/config.json`. See [config.sample.json](./functions/config.sample.json)
 
 ```Javascript
 module.exports = {
   apiKey: "api_key",
   safaricomConsumerKey: "safaricom_consumer_key",
   safaricomConsumerSecret: "safaricom_consumer_secret",
-  basefunctionsUrl: "https://deploy-location-project-name.cloudfunctions.net/mpesa/"
+  basefunctionsUrl: "https://[region]-[project-name].cloudfunctions.net/payments/"
 };
 ```
 
 `apiKey`: A key of your chosing. It is used to verify requests.  
 `safaricomConsumerKey`, `safaricomConsumerSecret`: Get from [Safaricom developer portal](https://developer.safaricom.co.ke/)  
-`basefunctionsUrl`: The only accurate way to determine this is to first deploy, then check the url. **MUST** end with `mpesa/`.
+`basefunctionsUrl`: The only accurate way to determine this is to first deploy, then check the url. **MUST** end with `payments/`.
+
+## Functions
+
+### [Firestore Trigger] notifyOnCompletedOrder
+
+Notifies a user when their order is marked as completed.
+
+### [HTTP Trigger] /payments/mpesa/request
+
+Makes an STK push request to M-Pesa's API.
+
+```JSON
+{
+  "amount": "1",
+  "phone": "2547xxxxxxxx",
+  "customerId": "customer_id",
+  "orderId": "order_id",
+}
+```
+
+### [HTTP Trigger] /payments/mpesa/callback
+
+Route for LNMO callback requests
 
 ## Testing locally
 

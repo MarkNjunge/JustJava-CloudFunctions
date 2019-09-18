@@ -1,0 +1,6 @@
+{
+  "apiKey": "your_chosen_key",
+  "safaricomConsumerKey": "safaricom_consumer_key",
+  "safaricomConsumerSecret": "safaricom_consumer_secret",
+  "baseCallbackUrl": "https://[region]-[project-name].cloudfunctions.net/payments/"
+}
